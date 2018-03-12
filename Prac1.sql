@@ -1,1 +1,28 @@
 /*PRIMERA PRACTICA CON TRIGGERS*/
+
+--EJER1
+CREATE OR REPLACE TRIGGER ins_emple
+BEFORE INSERT ON emple
+BEGIN
+  IF (TO_CHAR(SYSDATE,'HH24:MI') NOT BETWEEN '09:30' AND '17:30')
+  OR (TO_CHAR(SYSDATE,'DY') IN ()
+END ins_emple;
+
+--EJER2
+CREATE OR REPLACE TRIGGER Control_Empleados
+AFTER INSERT ON DELETE OR UPDATE ON emple
+FOR EACH ROW
+BEGIN
+  CASE
+    WHEN INSERTING THEN
+      INSERT INTO Ctrl_Empleados (Tabla, Usuario,Fecha, Oper)
+      VALUES('Empleados', USER, SYSDATE. 'INSERT')
+    WHEN UPDATING THEN
+      INSERT INTO Ctrl_Empleados (Tabla, Usuario,Fecha, Oper)
+      VALUES('Empleados', USER, SYSDATE. 'UPDATE')
+    WHEN DELETING THEN
+      INSERT INTO Ctrl_Empleados (Tabla, Usuario,Fecha, Oper)
+      VALUES('Empleados', USER, SYSDATE. 'DELETE')
+    ELSE RAISE_APPLICATION_ERROR (-20001, 'ERROR DESCONOCIDO');
+  END CASE;
+END Control_Empleados;
