@@ -30,13 +30,86 @@ END Control_Empleados;
 
 --EJER3
 CREATE OR REPLACE TRIGGER no_emple_ventas
-  v_nombre depart.dnombre%TYPE;
   BEFORE INSERT ON depart
   FOR EACH ROW
+DECLARE
+  v_cod depart.dept_no%TYPE;
 BEGIN
-  SELECT dnombre INTO v_nombre FROM depart;
-  IF (UPPER(dnombre) = 'VENTAS')
-    THEN RAISE_APPLICATION_ERROR (-20500, 'No se puden insertar empleados en este departamento');
+  SELECT dept_no INTO v_cod FROM depart WHERE UPPER(dnombre)= 'VENTAS';
+  IF : NEW.dept_no = v_cod
+    THEN RAISE_APPLICATION_ERROR (-20500, 'No se pueden insertar empleados en este departamento');
   END IF;
 END no_emple_ventas;
 
+--EJER4
+CREATE OR REPLACE TRIGGER aumento_sal
+  BEFORE UPDATE OF salario ON emple --SOLO CUANDO SE ACTUALICE LA COLUMNA SALARIO(por eso el of salario)
+  FOR EACH ROW WHEN (NEW.salario > OLD.salario * 1.2)
+BEGIN
+   --RAISE_APPLICATION_ERROR (-20500, 'No se puede aumentar tanto el salario');
+   dbms_output.put_line('No se puede aumentar tanto el salario');
+END no_emple_ventas;
+
+--EJER5
+CREATE OR REPLACE TRIGGER trig
+  INSTEAD OF INSERT ON EmpleadoDpto
+  FOR EACH ROW
+DECLARE
+  v_depmax NUMBER(2);
+  v_num NUMBER(2);
+  v_nombre depart.dnombre%TYPE;
+BEGIN
+  FOR va IN (select dnombre FROM depart)
+  LOOP
+    IF va.dnombre = :new.dnombre
+      THEN boo:=false;
+    END IF;
+  END LOOP;
+  --SELECT dept_no INTO v_num FROM depart WHERE UPPER(dnombre) = UPPER(:NEW.dnombre);
+  IF boo 
+    THEN 
+      SELECT NVL2(MAX(dept_no), dept_no + 10, 0) INTO v_num FROM depart;
+      INSERT INTO emple VALUES (:NEW.emp_no, :NEW.apellido, null, null, sysdate, 0, 0, v_num);
+  END IF;
+  SELECT dept_no INTO v_num FROM depart WHERE UPPER(dnombre) = UPPER(:NEW.dnombre);
+  /*ELSE  
+    
+  IF v_depmax < 90 
+    THEN
+      INSERT INTO depart VALUES (v_depmax, :new.dnombre, null);*/
+      INSERT INTO emple VALUES (:NEW.emp_no, :NEW.apellido, null, null, sysdate, 0, 0, v_depmax);
+  --ELSE
+    --dbms_output.put_line('No se pueden insertar más departamentos');
+  --END IF;
+EXCEPTION
+  WHEN no_data_found
+END trig;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*PRIMERA PRACTICA CON PAQUETES*/
